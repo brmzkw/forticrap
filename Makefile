@@ -1,4 +1,4 @@
-all: /etc/forticrap.conf
+all:
 	docker build -t forticrap .
 	docker run --privileged -v /etc/forticrap.conf:/etc/forticrap.conf:ro --rm -t forticrap
 
