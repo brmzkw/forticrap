@@ -45,7 +45,10 @@ Now, SSH on the Docker host:
 
 Let's forward the traffic to `10.230.0.140` to the Docker container:
 
-`(docker host)> sudo ip route add 10.230.0.140 via $(docker inspect -f '{{.NetworkSettings.Networks.bridge.IPAddress}}' forticrap)`
+`(docker host)> sudo ip route add 10.230.0.140 via 172.20.0.2`
+
+*NOTE*: `172.20.0.2` is hardcoded in the [Makefile](./Makefile). You can get this
+IP address with `docker inspect forticrap | grep IPAddress'.
 
 And do the iptables magic to route packets:
 
