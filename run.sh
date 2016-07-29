@@ -1,8 +1,6 @@
 #!/bin/sh
 
-VPN_SERVER=
-VPN_USER=
-VPN_PASSWORD=
+. /etc/forticrap
 
 mknod /dev/ppp c 108 0
 
