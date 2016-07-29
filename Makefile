@@ -1,6 +1,6 @@
 all: ~/.forticrap
 	docker build -t forticrap .
-	docker run --privileged --rm -ti -v ~/.forticrap:/etc/forticrap:ro forticrap
+	docker run --privileged --name forticrap --rm -ti -v ~/.forticrap:/etc/forticrap:ro forticrap
 
 config:
 	test -f ~/.forticrap && echo "~/.forticrap already exists. Abort." >&2 || cp config_template ~/.forticrap
