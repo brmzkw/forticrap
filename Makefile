@@ -1,6 +1,6 @@
 all:
 	docker build -t forticrap .
-	docker run --privileged -v /etc/forticrap.conf:/etc/forticrap.conf:ro --rm -ti forticrap
+	docker run --privileged --rm -ti forticrap
 
 dl:
 	# https://hadler.me/linux/forticlient-sslvpn-deb-packages/
