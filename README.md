@@ -52,7 +52,7 @@ IP address with `docker inspect forticrap | grep IPAddress'.
 
 And do the iptables magic to route packets:
 
-`(docker host)> iptables -t nat -A POSTROUTING -s $(ip a | grep eth1 | grep inet | awk '{print $2}') -j MASQUERADE`
+`(docker host)> sudo iptables -t nat -A POSTROUTING -s $(ip a | grep eth1 | grep inet | awk '{print $2}') -j MASQUERADE`
 
 
 **On Linux**
