@@ -1,13 +1,19 @@
+FORTICRAP_SUBNET=172.20.0.0/16
+FORTICRAP_IP=172.20.0.2
+
+FORTIGATE_PACKAGE=https://hadler.me/files/forticlient-sslvpn_4.4.2329-1_amd64.deb
+
+
 all: ~/.forticrap
 	docker build -t forticrap .
-	docker network create --subnet=172.20.0.0/16 forticrap || true
+	docker network create --subnet=${FORTICRAP_SUBNET} forticrap || true
 	docker rm forticrap || true
-	docker run                                \
-	  --privileged                      \
-	  --net forticrap --ip 172.20.0.2   \
-	  --name forticrap                  \
-	  --rm -ti                          \
-	  -v ~/.forticrap:/etc/forticrap:ro \
+	docker run                             \
+	  --privileged                         \
+	  --net forticrap --ip ${FORTICRAP_IP} \
+	  --name forticrap                     \
+	  --rm -ti                             \
+	  -v ~/.forticrap:/etc/forticrap:ro    \
 	  forticrap
 
 config:
@@ -15,7 +21,7 @@ config:
 
 dl:
 	# https://hadler.me/linux/forticlient-sslvpn-deb-packages/
-	wget https://hadler.me/files/forticlient-sslvpn_4.4.2329-1_amd64.deb -O forticlient-sslvpn_amd64.deb
+	wget ${FORTIGATE_PACKAGE} -O forticlient-sslvpn_amd64.deb
 
 
 osx-routes: IPTABLES_POSTROUTING = $(shell \
@@ -31,14 +37,14 @@ osx-routes:
 	; fi
 
 	# Add OSX routes to docker-machine then add docker-machine routes to the container.
-	@for subnet in $$(echo ${SUBNETS} | tr ',' ' '); do        \
-		sudo route -n delete -net $$subnet;                \
-		sudo route -n add -net $$subnet ${DOCKER_MACHINE}; \
-		                                                   \
-		docker-machine ssh default sudo                    \
-		  ip route delete $$subnet via 172.20.0.2;         \
-		docker-machine ssh default sudo                    \
-		  ip route add $$subnet via 172.20.0.2;            \
+	@for subnet in $$(echo ${SUBNETS} | tr ',' ' '); do                 \
+		sudo route -n delete -net $$subnet 2>/dev/null;             \
+		sudo route -n add -net $$subnet ${DOCKER_MACHINE};          \
+		                                                            \
+		docker-machine ssh default sudo                             \
+		  ip route delete $$subnet via ${FORTICRAP_IP} 2>/dev/null; \
+		docker-machine ssh default sudo                             \
+		  ip route add $$subnet via ${FORTICRAP_IP};                \
 	done
 
 	# Enable routing.
