@@ -16,3 +16,35 @@ config:
 dl:
 	# https://hadler.me/linux/forticlient-sslvpn-deb-packages/
 	wget https://hadler.me/files/forticlient-sslvpn_4.4.2329-1_amd64.deb -O forticlient-sslvpn_amd64.deb
+
+
+osx-routes: IPTABLES_POSTROUTING = $(shell \
+	docker-machine ssh default sudo /usr/local/sbin/iptables -L -t nat \
+		| grep MASQUERADE.*all.*anywhere.*anywhere)
+osx-routes: DOCKER_MACHINE = $(shell docker-machine ip)
+osx-routes:
+	@if [ "${SUBNETS}" = "" ]; then \
+		echo "SUBNETS not defined. Re-run with make osx-routes "   \
+		     "SUBNETS=<subnets> where subnet is a coma separated " \
+		     "list of subnets." | xargs >&2; \
+		exit 1 \
+	; fi
+
+	# Add OSX routes to docker-machine then add docker-machine routes to the container.
+	@for subnet in $$(echo ${SUBNETS} | tr ',' ' '); do        \
+		sudo route -n delete -net $$subnet;                \
+		sudo route -n add -net $$subnet ${DOCKER_MACHINE}; \
+		                                                   \
+		docker-machine ssh default sudo                    \
+		  ip route delete $$subnet via 172.20.0.2;         \
+		docker-machine ssh default sudo                    \
+		  ip route add $$subnet via 172.20.0.2;            \
+	done
+
+	# Enable routing.
+	@if [ "${IPTABLES_POSTROUTING}" = "" ]; then                            \
+		docker-machine ssh default sudo                                 \
+		  /usr/local/sbin/iptables -t nat -A POSTROUTING -j MASQUERADE; \
+	fi
+
+	@exit 0
